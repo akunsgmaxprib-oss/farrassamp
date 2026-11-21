@@ -1,0 +1,259 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Outfit", system-ui, -apple-system, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+
+  /* Subtle Obsidian Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #090A0D;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #27272A;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #DC2626;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.bg-architectural-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Pointer-tracking crimson radial spotlight on cards (zero React re-renders) */
+.spotlight-card {
+  position: relative;
+  --mx: 50%;
+  --my: 50%;
+}
+
+.spotlight-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  background: radial-gradient(
+    420px circle at var(--mx) var(--my),
+    rgba(220, 38, 38, 0.14),
+    rgba(220, 38, 38, 0.04) 42%,
+    transparent 70%
+  );
+  z-index: 1;
+}
+
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+
+/* Crisp light sweep on primary red CTA buttons */
+.btn-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-sheen::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.24),
+    transparent
+  );
+  transform: skewX(-24deg) translateX(0%);
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-sheen:hover::after {
+  transform: skewX(-24deg) translateX(380%);
+}
+
+/* Smooth GPU-composited skeleton shimmer for dark obsidian surfaces */
+@keyframes shimmer-slide {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+  }
+  100% {
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: #161922;
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translate3d(-100%, 0, 0);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 30%,
+    rgba(255, 255, 255, 0.075) 50%,
+    rgba(220, 38, 38, 0.035) 62%,
+    transparent 100%
+  );
+  animation: shimmer-slide 1.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* Periodic diagonal studio light beam across Hero showcase */
+@keyframes hero-beam-sweep {
+  0%,
+  55% {
+    transform: translateX(-160%) skewX(-22deg);
+    opacity: 0;
+  }
+  65% {
+    opacity: 0.75;
+  }
+  92% {
+    transform: translateX(260%) skewX(-22deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(260%) skewX(-22deg);
+    opacity: 0;
+  }
+}
+
+.hero-beam {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-beam::after {
+  content: "";
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 38%;
+  pointer-events: none;
+  z-index: 5;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(239, 68, 68, 0.14) 55%,
+    transparent 100%
+  );
+  animation: hero-beam-sweep 7.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+/* Hover specular glass glint on card thumbnails */
+.card-image-glint {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-image-glint::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -80%;
+  width: 45%;
+  height: 140%;
+  pointer-events: none;
+  z-index: 6;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.16),
+    transparent
+  );
+  transform: skewX(-22deg) translateX(0%);
+  transition: transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .card-image-glint::after,
+.group\/thumb:hover.card-image-glint::after {
+  transform: skewX(-22deg) translateX(430%);
+}
+
+/* Gentle breathing crimson backlight aura (GPU opacity/scale only) */
+@keyframes halo-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.03);
+  }
+}
+
+.red-halo-breathe {
+  animation: halo-breathe 5.5s ease-in-out infinite;
+}
+
+/* Subtle continuous architectural grid drift */
+@keyframes grid-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(48px, 48px, 0);
+  }
+}
+
+.kinetic-grid-drift {
+  animation: grid-drift 22s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .spotlight-card::before,
+  .btn-sheen::after,
+  .skeleton-shimmer,
+  .skeleton-shimmer::after,
+  .hero-beam::after,
+  .card-image-glint::after,
+  .red-halo-breathe,
+  .kinetic-grid-drift {
+    animation: none !important;
+    transition: none !important;
+  }
+}

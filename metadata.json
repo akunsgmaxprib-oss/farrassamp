@@ -1,0 +1,8 @@
+{
+  "name": "RA STORE — Toko Online & Unduhan YouTube Farrassamp",
+  "description": "SEDIA KEBUTUHAN SAMP,HOSTING,JASA SAMP,PANEL BOT,SETUP SERVER,DLL",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

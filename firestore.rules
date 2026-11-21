@@ -1,0 +1,331 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny all paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Primitive Helpers ---
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdminEmail() {
+      return isVerifiedUser() && request.auth.token.email == 'akunsgmaxprib@gmail.com';
+    }
+
+    function isAdmin() {
+      return isAdminEmail() || (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    // --- Validation Blueprints ---
+    function isValidProduct(data) {
+      return data.keys().hasAll([
+          'title', 'category', 'price', 'stockStatus', 'description',
+          'imageUrl', 'featured', 'ownerId', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'category', 'price', 'originalPrice', 'stockStatus', 'description',
+          'imageUrl', 'variantLabel', 'deliveryNote', 'featured', 'ownerId',
+          'createdAt', 'updatedAt'
+        ])
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 120
+        && data.category in [
+          'Hosting SA-MP', 'Paket On Server SA-MP', 'Modpack GTA SA-MP', 'Jasa Developer', 'Jasa SA-MP', 'Review & Streaming',
+          'Digital & Script', 'Modpack & Aset', 'Merch & Gear', 'Jasa & Paket'
+        ]
+        && data.price is number && data.price >= 0 && data.price <= 100000000
+        && (!('originalPrice' in data) || (data.originalPrice is number && data.originalPrice >= 0 && data.originalPrice <= 100000000))
+        && data.stockStatus in ['Tersedia', 'Stok Terbatas', 'Habis']
+        && data.description is string && data.description.size() >= 1 && data.description.size() <= 1500
+        && data.imageUrl is string && data.imageUrl.size() >= 1 && data.imageUrl.size() <= 300000
+        && (!('variantLabel' in data) || (data.variantLabel is string && data.variantLabel.size() <= 120))
+        && (!('deliveryNote' in data) || (data.deliveryNote is string && data.deliveryNote.size() <= 300))
+        && data.featured is bool
+        && isValidId(data.ownerId)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidYoutubeDownload(data) {
+      return data.keys().hasAll([
+          'title', 'category', 'youtubeUrl', 'youtubeVideoId', 'downloadUrl',
+          'fileName', 'fileSize', 'version', 'notes', 'downloadCount',
+          'ownerId', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'category', 'youtubeUrl', 'youtubeVideoId', 'downloadUrl',
+          'fileName', 'fileSize', 'version', 'notes', 'downloadCount',
+          'ownerId', 'createdAt', 'updatedAt'
+        ])
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 140
+        && data.category in ['Mod & Config', 'Preset & Editing', 'Dokumen & Tool']
+        && data.youtubeUrl is string && data.youtubeUrl.size() >= 1 && data.youtubeUrl.size() <= 300
+        && data.youtubeVideoId is string && data.youtubeVideoId.size() >= 5 && data.youtubeVideoId.size() <= 32 && data.youtubeVideoId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.downloadUrl is string && data.downloadUrl.size() >= 1 && data.downloadUrl.size() <= 500
+        && data.fileName is string && data.fileName.size() >= 1 && data.fileName.size() <= 120
+        && data.fileSize is string && data.fileSize.size() >= 1 && data.fileSize.size() <= 40
+        && data.version is string && data.version.size() >= 1 && data.version.size() <= 30
+        && data.notes is string && data.notes.size() >= 1 && data.notes.size() <= 1000
+        && data.downloadCount is number && data.downloadCount >= 0 && data.downloadCount <= 100000000
+        && isValidId(data.ownerId)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll([
+          'orderCode', 'customerName', 'customerWhatsapp', 'paymentMethod',
+          'items', 'totalAmount', 'status', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'orderCode', 'customerName', 'customerWhatsapp', 'paymentMethod',
+          'customerNote', 'items', 'totalAmount', 'status', 'buyerUid',
+          'createdAt', 'updatedAt'
+        ])
+        && data.orderCode is string && data.orderCode.size() >= 4 && data.orderCode.size() <= 32 && data.orderCode.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.customerName is string && data.customerName.size() >= 2 && data.customerName.size() <= 100
+        && data.customerWhatsapp is string && data.customerWhatsapp.size() >= 6 && data.customerWhatsapp.size() <= 30
+        && data.paymentMethod in ['QRIS', 'Transfer Bank', 'E-Wallet', 'COD']
+        && (!('customerNote' in data) || (data.customerNote is string && data.customerNote.size() <= 500))
+        && data.items is list && data.items.size() >= 1 && data.items.size() <= 20
+        && data.items[0] is map
+        && data.items[0].keys().hasAll(['productId', 'title', 'price', 'qty'])
+        && data.items[0].keys().hasOnly(['productId', 'title', 'price', 'qty'])
+        && data.items[0].productId is string && data.items[0].productId.size() >= 1 && data.items[0].productId.size() <= 128
+        && data.items[0].title is string && data.items[0].title.size() >= 1 && data.items[0].title.size() <= 120
+        && data.items[0].price is number && data.items[0].price >= 0 && data.items[0].price <= 100000000
+        && data.items[0].qty is number && data.items[0].qty >= 1 && data.items[0].qty <= 99
+        && data.totalAmount is number && data.totalAmount >= 0 && data.totalAmount <= 1000000000
+        && data.status in ['Menunggu', 'Diproses', 'Selesai', 'Dibatalkan']
+        && (!('buyerUid' in data) || isValidId(data.buyerUid))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStoreSettings(data) {
+      return data.keys().hasAll(['whatsappNumber', 'youtubeChannelUrl', 'ownerId', 'updatedAt'])
+        && data.keys().hasOnly([
+          'whatsappNumber', 'youtubeChannelUrl', 'discordUsername', 'discordInviteUrl', 'announcement',
+          'brandName', 'heroTagline', 'heroTitle', 'heroSubtitle',
+          'heroImageCaptionTitle', 'heroImageCaptionSubtitle',
+          'catalogEyebrow', 'catalogTitle', 'youtubeEyebrow', 'youtubeTitle',
+          'aboutRoleLabel', 'ownerDisplayName', 'aboutDescription', 'officialCardSubtitle', 'footerText',
+          'ytTabAllLabel', 'ytTabModLabel', 'ytTabPresetLabel', 'ytTabDocLabel',
+          'catTabAllLabel', 'catTabHostingLabel', 'catTabPaketOnLabel', 'catTabModpackLabel', 'catTabDevLabel', 'catTabJasaSampLabel', 'catTabReviewLabel',
+          'seededCatalogVersion', 'ownerId', 'updatedAt'
+        ])
+        && data.whatsappNumber is string && data.whatsappNumber.size() >= 6 && data.whatsappNumber.size() <= 30
+        && data.youtubeChannelUrl is string && data.youtubeChannelUrl.size() >= 1 && data.youtubeChannelUrl.size() <= 300
+        && (!('discordUsername' in data) || (data.discordUsername is string && data.discordUsername.size() <= 80))
+        && (!('discordInviteUrl' in data) || (data.discordInviteUrl is string && data.discordInviteUrl.size() <= 300))
+        && (!('announcement' in data) || (data.announcement is string && data.announcement.size() <= 200))
+        && (!('brandName' in data) || (data.brandName is string && data.brandName.size() <= 40))
+        && (!('heroTagline' in data) || (data.heroTagline is string && data.heroTagline.size() <= 80))
+        && (!('heroTitle' in data) || (data.heroTitle is string && data.heroTitle.size() <= 160))
+        && (!('heroSubtitle' in data) || (data.heroSubtitle is string && data.heroSubtitle.size() <= 500))
+        && (!('heroImageCaptionTitle' in data) || (data.heroImageCaptionTitle is string && data.heroImageCaptionTitle.size() <= 80))
+        && (!('heroImageCaptionSubtitle' in data) || (data.heroImageCaptionSubtitle is string && data.heroImageCaptionSubtitle.size() <= 140))
+        && (!('catalogEyebrow' in data) || (data.catalogEyebrow is string && data.catalogEyebrow.size() <= 80))
+        && (!('catalogTitle' in data) || (data.catalogTitle is string && data.catalogTitle.size() <= 100))
+        && (!('youtubeEyebrow' in data) || (data.youtubeEyebrow is string && data.youtubeEyebrow.size() <= 80))
+        && (!('youtubeTitle' in data) || (data.youtubeTitle is string && data.youtubeTitle.size() <= 100))
+        && (!('aboutRoleLabel' in data) || (data.aboutRoleLabel is string && data.aboutRoleLabel.size() <= 80))
+        && (!('ownerDisplayName' in data) || (data.ownerDisplayName is string && data.ownerDisplayName.size() <= 80))
+        && (!('aboutDescription' in data) || (data.aboutDescription is string && data.aboutDescription.size() <= 600))
+        && (!('officialCardSubtitle' in data) || (data.officialCardSubtitle is string && data.officialCardSubtitle.size() <= 120))
+        && (!('footerText' in data) || (data.footerText is string && data.footerText.size() <= 160))
+        && (!('ytTabAllLabel' in data) || (data.ytTabAllLabel is string && data.ytTabAllLabel.size() <= 40))
+        && (!('ytTabModLabel' in data) || (data.ytTabModLabel is string && data.ytTabModLabel.size() <= 40))
+        && (!('ytTabPresetLabel' in data) || (data.ytTabPresetLabel is string && data.ytTabPresetLabel.size() <= 40))
+        && (!('ytTabDocLabel' in data) || (data.ytTabDocLabel is string && data.ytTabDocLabel.size() <= 40))
+        && (!('catTabAllLabel' in data) || (data.catTabAllLabel is string && data.catTabAllLabel.size() <= 40))
+        && (!('catTabHostingLabel' in data) || (data.catTabHostingLabel is string && data.catTabHostingLabel.size() <= 40))
+        && (!('catTabPaketOnLabel' in data) || (data.catTabPaketOnLabel is string && data.catTabPaketOnLabel.size() <= 40))
+        && (!('catTabModpackLabel' in data) || (data.catTabModpackLabel is string && data.catTabModpackLabel.size() <= 40))
+        && (!('catTabDevLabel' in data) || (data.catTabDevLabel is string && data.catTabDevLabel.size() <= 40))
+        && (!('catTabJasaSampLabel' in data) || (data.catTabJasaSampLabel is string && data.catTabJasaSampLabel.size() <= 40))
+        && (!('catTabReviewLabel' in data) || (data.catTabReviewLabel is string && data.catTabReviewLabel.size() <= 40))
+        && (!('seededCatalogVersion' in data) || (data.seededCatalogVersion is string && data.seededCatalogVersion.size() <= 40))
+        && isValidId(data.ownerId)
+        && data.updatedAt is timestamp;
+    }
+
+    // --- Collection Rules ---
+
+    // 1. Products (Public Storefront Catalog, Admin-Only Writes)
+    match /products/{productId} {
+      allow get: if isValidId(productId);
+      allow list: if true;
+
+      allow create: if isValidId(productId)
+        && isAdmin()
+        && isValidProduct(incoming())
+        && incoming().ownerId == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(productId)
+        && isAdmin()
+        && isValidProduct(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'category', 'price', 'originalPrice', 'stockStatus', 'description',
+          'imageUrl', 'variantLabel', 'deliveryNote', 'featured', 'updatedAt'
+        ]);
+
+      allow delete: if isValidId(productId) && isAdmin();
+    }
+
+    // 2. YouTube Shared Downloads (Public Read, Admin Write, +1 Counter Increment)
+    match /youtube_downloads/{downloadId} {
+      allow get: if isValidId(downloadId);
+      allow list: if true;
+
+      allow create: if isValidId(downloadId)
+        && isAdmin()
+        && isValidYoutubeDownload(incoming())
+        && incoming().ownerId == request.auth.uid
+        && incoming().downloadCount == 0
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(downloadId)
+        && isValidYoutubeDownload(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'category', 'youtubeUrl', 'youtubeVideoId', 'downloadUrl',
+            'fileName', 'fileSize', 'version', 'notes', 'downloadCount', 'updatedAt'
+          ]))
+          ||
+          (incoming().diff(existing()).affectedKeys().hasOnly(['downloadCount', 'updatedAt'])
+            && incoming().downloadCount == existing().downloadCount + 1)
+        );
+
+      allow delete: if isValidId(downloadId) && isAdmin();
+    }
+
+    // 3. Orders (PII Protected: Admin or Owning Buyer Read Only)
+    match /orders/{orderId} {
+      allow get: if isValidId(orderId) && (
+        isAdmin() || (isSignedIn() && existing().buyerUid == request.auth.uid)
+      );
+      allow list: if isAdminEmail() || (isSignedIn() && resource.data.buyerUid == request.auth.uid);
+
+      allow create: if isValidId(orderId)
+        && isValidOrder(incoming())
+        && incoming().status == 'Menunggu'
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && (!('buyerUid' in incoming()) || (isSignedIn() && incoming().buyerUid == request.auth.uid));
+
+      allow update: if isValidId(orderId)
+        && isAdmin()
+        && isValidOrder(incoming())
+        && incoming().orderCode == existing().orderCode
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (!('buyerUid' in existing()) || incoming().buyerUid == existing().buyerUid)
+        && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']);
+
+      allow delete: if isValidId(orderId) && isAdmin();
+    }
+
+    // 4. Store Settings (Public Get, Admin-Only Write)
+    match /store_settings/{settingId} {
+      allow get: if isValidId(settingId);
+      allow list: if false;
+
+      allow create: if isValidId(settingId)
+        && isAdmin()
+        && isValidStoreSettings(incoming())
+        && incoming().ownerId == request.auth.uid
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(settingId)
+        && isAdmin()
+        && isValidStoreSettings(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'whatsappNumber', 'youtubeChannelUrl', 'discordUsername', 'discordInviteUrl', 'announcement',
+          'brandName', 'heroTagline', 'heroTitle', 'heroSubtitle',
+          'heroImageCaptionTitle', 'heroImageCaptionSubtitle',
+          'catalogEyebrow', 'catalogTitle', 'youtubeEyebrow', 'youtubeTitle',
+          'aboutRoleLabel', 'ownerDisplayName', 'aboutDescription', 'officialCardSubtitle', 'footerText',
+          'ytTabAllLabel', 'ytTabModLabel', 'ytTabPresetLabel', 'ytTabDocLabel',
+          'catTabAllLabel', 'catTabHostingLabel', 'catTabPaketOnLabel', 'catTabModpackLabel', 'catTabDevLabel', 'catTabJasaSampLabel', 'catTabReviewLabel',
+          'seededCatalogVersion', 'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    // 5. Admins Allowlist (Only primary verified Google admin can manage authorized UIDs)
+    function isValidAdminUser(data) {
+      return data.keys().hasAll(['email', 'role', 'grantedBy', 'createdAt'])
+        && data.keys().hasOnly(['email', 'role', 'grantedBy', 'createdAt'])
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 120
+        && data.role == 'owner'
+        && isValidId(data.grantedBy)
+        && data.createdAt is timestamp;
+    }
+
+    match /admins/{uid} {
+      allow get: if isValidId(uid) && isSignedIn() && (request.auth.uid == uid || isAdminEmail());
+      allow list: if isAdminEmail();
+      allow create, update: if isValidId(uid)
+        && isAdminEmail()
+        && isValidAdminUser(incoming())
+        && incoming().grantedBy == request.auth.uid
+        && incoming().createdAt == request.time;
+      allow delete: if isValidId(uid) && isAdminEmail();
+    }
+
+    // 6. Permanently Saved Product Images (Owner-Only Gallery)
+    function isValidProductImage(data) {
+      return data.keys().hasAll(['label', 'imageUrl', 'ownerId', 'createdAt'])
+        && data.keys().hasOnly(['label', 'imageUrl', 'ownerId', 'createdAt'])
+        && data.label is string && data.label.size() >= 1 && data.label.size() <= 80
+        && data.imageUrl is string && data.imageUrl.size() >= 1 && data.imageUrl.size() <= 300000
+        && isValidId(data.ownerId)
+        && data.createdAt is timestamp;
+    }
+
+    match /product_images/{imageId} {
+      allow get: if isValidId(imageId) && isAdmin();
+      allow list: if isAdmin();
+
+      allow create: if isValidId(imageId)
+        && isAdmin()
+        && isValidProductImage(incoming())
+        && incoming().ownerId == request.auth.uid
+        && incoming().createdAt == request.time;
+
+      allow update: if false;
+      allow delete: if isValidId(imageId) && isAdmin();
+    }
+  }
+}

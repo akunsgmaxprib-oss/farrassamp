@@ -1,0 +1,539 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Item sold in RA STORE by Farrassamp",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Product display name"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Hosting SA-MP",
+            "Paket On Server SA-MP",
+            "Modpack GTA SA-MP",
+            "Jasa Developer",
+            "Jasa SA-MP",
+            "Review & Streaming"
+          ],
+          "description": "Product category"
+        },
+        "price": {
+          "type": "number",
+          "description": "Price in IDR"
+        },
+        "originalPrice": {
+          "type": "number",
+          "description": "Optional strikethrough original price in IDR for promo display"
+        },
+        "stockStatus": {
+          "type": "string",
+          "enum": ["Tersedia", "Stok Terbatas", "Habis"],
+          "description": "Availability status"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1500,
+          "description": "Detailed product description"
+        },
+        "imageUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300000,
+          "description": "Product image path, URL, or permanent compressed data URL"
+        },
+        "variantLabel": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Optional variant options summary"
+        },
+        "deliveryNote": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Fulfillment or delivery note"
+        },
+        "featured": {
+          "type": "boolean",
+          "description": "Whether highlighted in store"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Creator/Owner Firebase UID"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp"
+        }
+      },
+      "required": [
+        "title",
+        "category",
+        "price",
+        "stockStatus",
+        "description",
+        "imageUrl",
+        "featured",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "YoutubeDownload": {
+      "title": "YoutubeDownload",
+      "description": "Downloadable file or resource shared from Farrassamp YouTube channel",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 140,
+          "description": "Resource title"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Mod & Config", "Preset & Editing", "Dokumen & Tool"],
+          "description": "Resource category"
+        },
+        "youtubeUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "Full YouTube video URL"
+        },
+        "youtubeVideoId": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Extracted YouTube video ID"
+        },
+        "downloadUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Direct or mirror download URL"
+        },
+        "fileName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Display filename"
+        },
+        "fileSize": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "description": "Human-readable file size"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30,
+          "description": "Version label"
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "Installation or release notes"
+        },
+        "downloadCount": {
+          "type": "number",
+          "description": "Total download clicks"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Creator/Owner Firebase UID"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp"
+        }
+      },
+      "required": [
+        "title",
+        "category",
+        "youtubeUrl",
+        "youtubeVideoId",
+        "downloadUrl",
+        "fileName",
+        "fileSize",
+        "version",
+        "notes",
+        "downloadCount",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order submitted from RA STORE cart",
+      "type": "object",
+      "properties": {
+        "orderCode": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Human-readable order code"
+        },
+        "customerName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100,
+          "description": "Customer full name"
+        },
+        "customerWhatsapp": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 30,
+          "description": "Customer WhatsApp number"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["QRIS", "Transfer Bank", "E-Wallet", "COD"],
+          "description": "Selected payment method"
+        },
+        "customerNote": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Address, email, or order notes"
+        },
+        "items": {
+          "type": "array",
+          "description": "Ordered cart items (1..20)"
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total order price in IDR"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Menunggu", "Diproses", "Selesai", "Dibatalkan"],
+          "description": "Order fulfillment status"
+        },
+        "buyerUid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Optional authenticated buyer UID"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp"
+        }
+      },
+      "required": [
+        "orderCode",
+        "customerName",
+        "customerWhatsapp",
+        "paymentMethod",
+        "items",
+        "totalAmount",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "Public configuration for RA STORE",
+      "type": "object",
+      "properties": {
+        "whatsappNumber": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 30,
+          "description": "Owner WhatsApp number without +"
+        },
+        "youtubeChannelUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "Farrassamp YouTube channel URL"
+        },
+        "discordUsername": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Owner Discord username"
+        },
+        "discordInviteUrl": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Discord store invite URL"
+        },
+        "announcement": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Optional slim store announcement"
+        },
+        "brandName": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Store brand name displayed in header and hero"
+        },
+        "heroTagline": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Tagline beside brand name in hero"
+        },
+        "heroTitle": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Main hero headline"
+        },
+        "heroSubtitle": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Main hero supporting paragraph"
+        },
+        "heroImageCaptionTitle": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Caption title on hero hardware card"
+        },
+        "heroImageCaptionSubtitle": {
+          "type": "string",
+          "maxLength": 140,
+          "description": "Caption subtitle on hero hardware card"
+        },
+        "catalogEyebrow": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Eyebrow label above catalog title"
+        },
+        "catalogTitle": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Catalog section heading"
+        },
+        "youtubeEyebrow": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Eyebrow label above YouTube downloads title"
+        },
+        "youtubeTitle": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "YouTube downloads section heading"
+        },
+        "aboutRoleLabel": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Owner role label in about section"
+        },
+        "ownerDisplayName": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Owner display name in about section"
+        },
+        "aboutDescription": {
+          "type": "string",
+          "maxLength": 600,
+          "description": "About store description paragraph"
+        },
+        "officialCardSubtitle": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Subtitle under official emblem card"
+        },
+        "footerText": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Footer copyright/brand text"
+        },
+        "ytTabAllLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for YouTube All filter tab"
+        },
+        "ytTabModLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Mod & Config YouTube tab"
+        },
+        "ytTabPresetLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Preset & Editing YouTube tab"
+        },
+        "ytTabDocLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Dokumen & Tool YouTube tab"
+        },
+        "catTabAllLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Catalog All filter tab"
+        },
+        "catTabHostingLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Hosting SA-MP catalog tab"
+        },
+        "catTabPaketOnLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Paket On Server SA-MP catalog tab"
+        },
+        "catTabModpackLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Modpack GTA SA-MP catalog tab"
+        },
+        "catTabDevLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Jasa Developer catalog tab"
+        },
+        "catTabJasaSampLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Jasa SA-MP catalog tab"
+        },
+        "catTabReviewLabel": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Custom display label for Review & Streaming catalog tab"
+        },
+        "seededCatalogVersion": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Tracks automatic initial catalog sync version"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner UID"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp"
+        }
+      },
+      "required": ["whatsappNumber", "youtubeChannelUrl", "ownerId", "updatedAt"]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized secondary owner UID granted Studio access by primary verified admin",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Admin display email"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["owner"],
+          "description": "Role identifier"
+        },
+        "grantedBy": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Primary admin UID"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        }
+      },
+      "required": ["email", "role", "grantedBy", "createdAt"]
+    },
+    "ProductImage": {
+      "title": "ProductImage",
+      "description": "Permanently saved owner-uploaded product photo stored in Firestore",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Display label for saved photo"
+        },
+        "imageUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300000,
+          "description": "Compressed permanent image data URL"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Uploader owner UID"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp"
+        }
+      },
+      "required": ["label", "imageUrl", "ownerId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Catalog of products sold at RA STORE"
+    },
+    "/product_images/{imageId}": {
+      "schema": { "$ref": "#/entities/ProductImage" },
+      "description": "Permanently saved owner-uploaded product photos"
+    },
+    "/youtube_downloads/{downloadId}": {
+      "schema": { "$ref": "#/entities/YoutubeDownload" },
+      "description": "Downloadable resources shared from Farrassamp YouTube videos"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Customer orders with PII restricted to admin or owning buyer"
+    },
+    "/store_settings/{settingId}": {
+      "schema": { "$ref": "#/entities/StoreSettings" },
+      "description": "Public store settings editable only by admin"
+    },
+    "/admins/{uid}": {
+      "schema": { "$ref": "#/entities/AdminUser" },
+      "description": "Authorized store owner UID allowlist"
+    }
+  }
+}
